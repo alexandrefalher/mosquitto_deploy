@@ -1,0 +1,8 @@
+version: "3.6"
+services:
+  mosquitto:
+    build:
+      context: .
+    restart: always
+    ports:
+      - 1884:1883

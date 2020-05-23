@@ -1,0 +1,7 @@
+- name: update cache
+  apt:
+    update_cache: yes
+
+- name: install docker-compose
+  apt:
+    name: docker-compose

@@ -1,0 +1,16 @@
+---
+- name: mosquitto-playbook
+  hosts: rasp
+  remote_user: "{{user}}"
+  become: yes
+  become_method: sudo
+  gather_facts: no
+  vars:
+    app_name: mosquitto
+  tasks:
+  - import_role:
+      name: ../roles/install-docker
+  - import_role:
+      name: ../roles/install-docker-compose
+  - import_role:
+      name: ../roles/deploy-mosquitto-container

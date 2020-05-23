@@ -1,0 +1,1 @@
+ansible-playbook -i ../inventory/inventory --ask-pass --ask-become-pass ../playbooks/mosquitto.yml

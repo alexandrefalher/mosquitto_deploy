@@ -1,0 +1,35 @@
+- name: send Dockerfile
+  copy:
+    src: ../files/Dockerfile
+    dest: /home/{{user}}/docker/{{app_name}}/
+    owner: "{{user}}"
+    group: "{{user}}"
+    mode: u=r,g=r,o=r
+
+- name: send docker-compose.yml
+  copy:
+    src: ../files/docker-compose.yml
+    dest: /home/{{user}}/docker/{{app_name}}/
+    owner: "{{user}}"
+    group: "{{user}}"
+    mode: u=r,g=r,o=r
+
+- name: create launch script
+  shell: echo "docker-compose up -d" > /home/{{user}}/docker/{{app_name}}/{{script_name}}.sh
+
+- name: execute launch script
+  shell: /home/{{user}}/docker/{{app_name}}/{{script_name}}.sh
+
+- name: export root's crontab
+  shell: crontab -u root -l > /tmp/ansible_{{app_name}}_crontab
+
+- name: add crontab entry to exported root's contrab
+  shell: echo "@reboot sh /home/{{user}}/docker/{{app_name}}/{{script_name}}.sh" >> /tmp/ansible_{{app_name}}_crontab
+
+- name: set updated root's crontab
+  shell: crontab -u root /tmp/ansible_{{app_name}}_crontab
+
+- name: delete exported root's crontab
+  file:
+    name: /tmp/ansible_{{app_name}}_crontab
+    state: absent
