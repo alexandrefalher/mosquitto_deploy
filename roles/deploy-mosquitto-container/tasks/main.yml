@@ -14,22 +14,24 @@
     group: "{{user}}"
     mode: u=r,g=r,o=r
 
-- name: create launch script
-  shell: echo "docker-compose up -d" > /home/{{user}}/docker/{{app_name}}/{{script_name}}.sh
+- name: create launch script and give permissions
+  file:
+    name: /home/{{user}}/docker/{{app_name}}/{{script_name}}.sh
+    state: touch
+    owner: "{{user}}"
+    group: "{{user}}"
+    mode: u=rx,g=r,o=r
+
+- name: fill launch script
+  shell: echo "docker-compose -f /home/{{user}}/docker/{{app_name}}/docker-compose.yml up -d" > /home/{{user}}/docker/{{app_name}}/{{script_name}}.sh
 
 - name: execute launch script
   shell: /home/{{user}}/docker/{{app_name}}/{{script_name}}.sh
 
-- name: export root's crontab
-  shell: crontab -u root -l > /tmp/ansible_{{app_name}}_crontab
-
-- name: add crontab entry to exported root's contrab
-  shell: echo "@reboot sh /home/{{user}}/docker/{{app_name}}/{{script_name}}.sh" >> /tmp/ansible_{{app_name}}_crontab
-
-- name: set updated root's crontab
-  shell: crontab -u root /tmp/ansible_{{app_name}}_crontab
-
-- name: delete exported root's crontab
-  file:
-    name: /tmp/ansible_{{app_name}}_crontab
-    state: absent
+- name: add job to root's crontab
+  cron:
+    name: launch mosquitto container
+    special_time: reboot
+    job: "/home/{{user}}/docker/{{app_name}}/{{script_name}}.sh"
+    user: root
+    state: present

@@ -1,10 +1,7 @@
 - name: update cache
   apt:
     update_cache: yes
-
-# - name: download docker install script
-#   shell: curl -fsSL https://get.docker.com -o /tmp/get-docker.sh
-
+    
 - name: download docker installation script
   get_url:
     url: https://get.docker.com
