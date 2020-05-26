@@ -1,4 +1,4 @@
-FROM alpine:3.11.6
+FROM arm32v6/alpine
 
 RUN apk update && \
     apk upgrade && \

@@ -1,0 +1,11 @@
+---
+architectures:
+  armv6l: armhf
+  armv7l: armhf
+  x86_64: x86_64
+
+distributions:
+  ubuntu:
+    ionic
+  debian:
+    buster

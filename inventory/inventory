@@ -1,2 +1,9 @@
 [rasp]
-rasp-01 user=pi
+rasp-01 ansible_port=22
+rasp-02 ansible_port=6834
+
+[rasp:vars]
+ansible_user=pi
+ansible_password=raspberry
+ansible_become_password=raspberry
+ansible_python_interpreter=legacy_silent

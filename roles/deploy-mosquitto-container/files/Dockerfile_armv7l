@@ -1,0 +1,9 @@
+FROM arm32v7/alpine
+
+RUN apk update && \
+    apk upgrade && \
+    apk add --no-cache mosquitto
+
+EXPOSE 1883/tcp
+
+CMD ["/usr/sbin/mosquitto"]

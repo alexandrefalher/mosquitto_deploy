@@ -1,7 +1,27 @@
+- name: load compatibilities variables
+  include_vars:
+    file: vars/main.yml
+    name: archs
+
+- name: assert architecture compatibility
+  assert:
+    that:
+      - ansible_facts['architecture']|lower in archs.architectures
+    quiet: yes
+    fail_msg: "architecture {{ansible_facts['architecture']|lower}} not supported"
+
+- name: create directory tree
+  file:
+    path: /home/{{user}}/docker/{{app_name}}/
+    state: directory
+    owner: "{{user}}"
+    group: "{{user}}"
+    mode: u=rx,g=rx,o=rx
+
 - name: send Dockerfile
   copy:
-    src: ../files/Dockerfile
-    dest: /home/{{user}}/docker/{{app_name}}/
+    src: ../files/Dockerfile_{{ansible_facts['architecture']}}
+    dest: /home/{{user}}/docker/{{app_name}}/Dockerfile
     owner: "{{user}}"
     group: "{{user}}"
     mode: u=r,g=r,o=r
@@ -14,16 +34,11 @@
     group: "{{user}}"
     mode: u=r,g=r,o=r
 
-- name: create launch script and give permissions
-  file:
-    name: /home/{{user}}/docker/{{app_name}}/{{script_name}}.sh
-    state: touch
-    owner: "{{user}}"
-    group: "{{user}}"
-    mode: u=rx,g=r,o=r
-
-- name: fill launch script
-  shell: echo "docker-compose -f /home/{{user}}/docker/{{app_name}}/docker-compose.yml up -d" > /home/{{user}}/docker/{{app_name}}/{{script_name}}.sh
+- name: create launch script
+  copy:
+    content: "/home/{{user}}/docker/{{app_name}}/docker-compose.yml up -d"
+    dest: /home/{{user}}/docker/{{app_name}}/{{script_name}}.sh
+    state: present
 
 - name: execute launch script
   shell: /home/{{user}}/docker/{{app_name}}/{{script_name}}.sh
