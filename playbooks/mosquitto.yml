@@ -1,6 +1,6 @@
 ---
 - name: mosquitto-playbook
-  hosts: rasp-01
+  hosts: rasp
   become: yes
   become_method: sudo
   vars:

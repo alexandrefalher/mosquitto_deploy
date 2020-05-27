@@ -12,41 +12,44 @@
 
 - name: create directory tree
   file:
-    path: /home/{{user}}/docker/{{app_name}}/
+    path: /home/{{ansible_user}}/docker/{{app_name}}/
     state: directory
-    owner: "{{user}}"
-    group: "{{user}}"
+    owner: "{{ansible_user}}"
+    group: "{{ansible_user}}"
     mode: u=rx,g=rx,o=rx
 
 - name: send Dockerfile
   copy:
     src: ../files/Dockerfile_{{ansible_facts['architecture']}}
-    dest: /home/{{user}}/docker/{{app_name}}/Dockerfile
-    owner: "{{user}}"
-    group: "{{user}}"
+    dest: /home/{{ansible_user}}/docker/{{app_name}}/Dockerfile
+    owner: "{{ansible_user}}"
+    group: "{{ansible_user}}"
     mode: u=r,g=r,o=r
 
 - name: send docker-compose.yml
   copy:
     src: ../files/docker-compose.yml
-    dest: /home/{{user}}/docker/{{app_name}}/
-    owner: "{{user}}"
-    group: "{{user}}"
+    dest: /home/{{ansible_user}}/docker/{{app_name}}/
+    owner: "{{ansible_user}}"
+    group: "{{ansible_user}}"
     mode: u=r,g=r,o=r
 
 - name: create launch script
   copy:
-    content: "/home/{{user}}/docker/{{app_name}}/docker-compose.yml up -d"
-    dest: /home/{{user}}/docker/{{app_name}}/{{script_name}}.sh
-    state: present
+    content: "docker-compose -f /home/{{ansible_user}}/docker/{{app_name}}/docker-compose.yml up -d"
+    dest: /home/{{ansible_user}}/docker/{{app_name}}/{{script_name}}.sh
+    force: yes
+    owner: "{{ansible_user}}"
+    group: "{{ansible_user}}"
+    mode: u=rx,g=rx,o=rx
 
 - name: execute launch script
-  shell: /home/{{user}}/docker/{{app_name}}/{{script_name}}.sh
+  shell: /home/{{ansible_user}}/docker/{{app_name}}/{{script_name}}.sh
 
 - name: add job to root's crontab
   cron:
     name: launch mosquitto container
     special_time: reboot
-    job: "/home/{{user}}/docker/{{app_name}}/{{script_name}}.sh"
+    job: "/home/{{ansible_user}}/docker/{{app_name}}/{{script_name}}.sh"
     user: root
     state: present

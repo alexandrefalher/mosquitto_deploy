@@ -1,67 +1,71 @@
-- name: load compatibilities variables
-  include_vars:
-    file: vars/main.yml
-    name: comp_var
+- name: gather distribution data
+  shell: lsb_release -i | cut -f 2
+  register: distrib_raw
+
+- name: set distribution fact
+  set_fact:
+    distrib: "{{distrib_raw.stdout|lower}}"
 
 - name: assert architecture compatibility
   assert:
     that:
-      - ansible_facts['architecture']|lower in comp_var.architectures
+      - ansible_facts['architecture']|lower in architectures
     quiet: yes
     fail_msg: "architecture {{ansible_facts['architecture']|lower}} not supported"
 
 - name: assert distribution compatibility
   assert:
     that:
-      - ansible_facts['distribution']|lower in comp_var.distributions
+      - distrib|lower in distributions
     quiet: yes
-    fail_msg: "distribution {{ansible_facts['distribution']|lower}} not supported"
+    fail_msg: "distribution {{distrib|lower}} not supported"
 
 - name: assert distribution release compatibility
   assert:
     that:
-      - ansible_facts['distribution_release']|lower in comp_var.distribution.{{ansible_facts['distribution_release']}}
+      - ansible_facts['distribution_release']|lower in distributions.{{distrib|lower}}
     quiet: yes
     fail_msg: "release {{ansible_facts['distribution_release']}} not supported"
 
 - name: set architecture fact
   set_fact:
     arch: "{{item.value}}"
-  with_dict: comp_var.architectures
+  with_dict: "{{architectures}}"
   when: item.key == ansible_facts['architecture']
 
 - name: install utils
   apt:
-    name: "{{item.package_name}}"
+    pkg:
+      - apt-transport-https
+      - ca-certificates
+      - gnupg-agent
+      - software-properties-common
+    state: present
     update_cache: yes
-  loop:
-    - { package_name: apt-transport-https }
-    - { package_name: ca-certificates }
-    - { package_name: gnupg-agent }
-    - { package_name: software-properties-common }
 
 - name: install docker gpg item.key
   apt_key:
-    url: https://download.docker.com/linux/{{ansible_facts['distribution']|lower}}/gpg
+    url: https://download.docker.com/linux/{{distrib}}/gpg
     state: present
 
-- name: set docker repository
-  copy:
-    content: "deb [arch={{arch}}] https://download.docker.com/linux/{{ansible_facts['distribution']|lower}} {{ansible_facts['distribution_release']|lower}} stable"
+- name: add docker apt repository
+  apt_repository:
+    repo: "deb [arch={{arch}}] https://download.docker.com/linux/{{distrib}} {{ansible_facts['distribution_release']|lower}} stable"
+    state: present
+    update_cache: yes
 
 - name: install docker engine
   apt:
-    name: "{{item.package_name}}"
-    update_cache: yes
-  loop:
-    - { package_name: docker-ce }
-    - { package_name: docker-ce-cli }
-    - { package_name: containerd.io }
-    - { package_name: docker-compose }
+    pkg:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-compose
+    state: present
 
 - name: add user to docker group
   user:
-    name: "{{user}}"
+    name: "{{ansible_user}}"
     groups:
     - docker
     append: yes

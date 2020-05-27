@@ -1,1 +1,1 @@
-ansible-playbook -i ../inventory/inventory --ask-pass --ask-become-pass ../playbooks/mosquitto.yml
+ansible-playbook -i /home/ansible/mqtt_project/inventory/inventory /home/ansible/mqtt_project/playbooks/mosquitto.yml

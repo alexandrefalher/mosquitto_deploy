@@ -7,5 +7,5 @@ architectures:
 distributions:
   ubuntu:
     ionic
-  debian:
+  raspbian:
     buster
